@@ -139,7 +139,7 @@ SELECT
     COUNT(stage2) AS count_card_add,
     COUNT(stage3) AS count_card_click,
     COUNT(stage4) AS order_click,
-	  ROUND(COUNT(stage4) * 100.00 / COUNT(stage1), 2) AS conv_product_click_to_order_click,
+    ROUND(COUNT(stage4) * 100.00 / COUNT(stage1), 2) AS conv_product_click_to_order_click,
     ROUND((COUNT(stage2)) * 100.00 / COUNT(stage1), 2) AS conv_product_click_to_card_add,
     ROUND(COUNT(stage4) * 100.00 / COUNT(stage3), 2) AS conv_card_click_to_order_click
 FROM product_click
@@ -148,7 +148,8 @@ USING (userid)
 LEFT JOIN card_click
 USING (userid)
 LEFT JOIN order_click
-USING (userid)```
+USING (userid)
+```
 
 
 Можно рассчитать конверсию в динамике, например, по дням. Для этого в подзапросах
