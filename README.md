@@ -43,7 +43,7 @@
 
 Разберем определение этих метрик с использованием СУБД PostgreSQL.
 
-## 1. Воронка продаж и конверсия клика в покупку, клика в добавление товара в корзину
+## 1. Воронка продаж и конверсия в покупку
 
 
 На первом этапе для поиска проблемных мест необходимо построить воронку продаж и
@@ -139,11 +139,8 @@ SELECT
     COUNT(stage2) AS count_card_add,
     COUNT(stage3) AS count_card_click,
     COUNT(stage4) AS order_click,
-    ROUND(COUNT(stage4) * 100.00 / COUNT(stage1), 2) AS
-    conv_product_click_to_order_click,
-    ROUND((COUNT(stage2)) * 100.00 / COUNT(stage1), 2) AS
-    conv_product_click_to_card_add,
-    ROUND(COUNT(stage4) * 100.00 / COUNT(stage3), 2) AS conv_card_click_to_order_click
+	  ROUND(COUNT(stage4) * 100.00 / COUNT(stage1), 2) AS conv_product_click_to_order_click,
+    ROUND((COUNT(stage2)) * 100.00 / COUNT(stage1), 2) AS conv_product_click_to_card_add,
     ROUND(COUNT(stage4) * 100.00 / COUNT(stage3), 2) AS conv_card_click_to_order_click
 FROM product_click
 LEFT JOIN card_add
@@ -151,8 +148,7 @@ USING (userid)
 LEFT JOIN card_click
 USING (userid)
 LEFT JOIN order_click
-USING (userid)
-```
+USING (userid)```
 
 
 Можно рассчитать конверсию в динамике, например, по дням. Для этого в подзапросах
@@ -266,13 +262,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-#Читаем таблицу и преобразуем в датафрейм
+# Читаем таблицу и преобразуем в датафрейм
 df_search_csv = pd.read_csv('Searches.csv')
 df_search = pd.DataFrame(df_search_csv)
 
-#Убеждаемся, что дата дана в формате datetime и приводим ее ко дню
-df_search['datetime'] = pd.to_datetime(df_search['datetime'])
-df_search['dateday'] = df_search['datetime'].dt.date
+# Убеждаемся, что дата дана в формате datetime и приводим ее ко дню
+df_search['timestamp'] = pd.to_datetime(df_search['timestamp'])
+df_search['dateday'] = df_search['timestamp'].dt.date
 df_search_sorted = df_search.sort_values(by='dateday', ascending=True)
 
 # Подсчет общего количества searchTerm по дням
@@ -299,8 +295,10 @@ plt.gca().xaxis.set_major_locator(mdates.DayLocator())
 
 # Первый компонент: "нулевые" запросы
 plt.bar(total_null_search['dateday'], total_null_search['count_null_search'], label='null_search', color='coral')
+
 # Второй компонент: разница между полным числом запросов и "нулевыми"
-plt.bar(total_null_search['dateday'], total_null_search['difference'], bottom=total_null_search['count_null_search'], label='Non-Filtered Search Term', color='blue')
+plt.bar(total_null_search['dateday'], total_null_search['difference'], bottom=total_null_search['count_null_search'], color='blue')
+
 plt.title('Поисковые запросы по дням', fontsize=16) # заголовок
 plt.xlabel('Дата', fontsize=14) # ось абсцисс
 plt.xticks(rotation=45)
@@ -331,14 +329,14 @@ ORDER BY COUNT(productId) DESC
 трендовых запросов можно проследить количество запросов за предыдущие недели и
 посчитать, есть ли прирост в частоте запроса. Отфильтруем данные за последние две недели.
 Информация лучше будет восприниматься в табличном виде. Выгрузив данные в формате
-csv, можно загрузить на Дашборд, например, на платформе Apache Superset.
+csv, можно загрузить на дашборд, например, на платформе **Apache Superset**.
 
 
 Пример запроса:
 
 
 ```sql
-WITH case Searches AS
+WITH case_Searches AS
 (
 SELECT
     searchTerm,
@@ -347,14 +345,13 @@ SELECT
         WHEN timestamp >= DATE_TRUNC('week' , NOW()) - INTERVAL '1 week'
             AND timestamp < DATE_TRUNC('week' , NOW())
         THEN 1 ELSE 0 END) AS previous_week,
-SUM(
+    SUM(
         CASE
         WHEN timestamp >= DATE_TRUNC('week' , NOW()) - INTERVAL '2 weeks'
             AND timestamp < DATE_TRUNC('week' , NOW()) - INTERVAL '1 week'
         THEN 1 ELSE 0 END) AS two_weeks_ago
 FROM Searches
-WHERE timestamp >= DATE_TRUNC('week' , NOW()) - INTERVAL '2 weeks'
--- Фильтруем только последние две недели
+WHERE timestamp >= DATE_TRUNC('week' , NOW()) - INTERVAL '2 weeks' -- Фильтруем только последние две недели
 GROUP BY searchTerm
 )
 SELECT
@@ -380,5 +377,5 @@ GROUP BY productId
 ORDER BY COUNT(productId) DESC
 ```
 
-Данные удобно просматривать в табличном виде. Можно выгрузить в формате csv и
+Также можно сгруппировать по `eventType` и отслеживать популярность товаров по типу события. Данные удобно просматривать в табличном виде. Можно выгрузить в формате csv и
 отобразить на Дашборде, например на платформе Apache Superset.
