@@ -144,11 +144,11 @@ SELECT
     ROUND(COUNT(stage4) * 100.00 / COUNT(stage3), 2) AS conv_card_click_to_order_click
 FROM product_click
 LEFT JOIN card_add
-USING (userid)
+USING (userGUID)
 LEFT JOIN card_click
-USING (userid)
+USING (userGUID)
 LEFT JOIN order_click
-USING (userid)
+USING (userGUID)
 ```
 
 
@@ -186,7 +186,7 @@ FROM Searches
 ```
 
 
-## 3. Число запросов, по которым не нашлось товаров, в том числе уникальных («нулевые» запросы)
+## 3. Число запросов, по которым не нашлось товаров («нулевые» запросы)
 
 
 Будем считать, что товаров не нашлось по запросу пользователя, если оба признака
@@ -379,4 +379,4 @@ ORDER BY COUNT(productId) DESC
 ```
 
 Также можно сгруппировать по `eventType` и отслеживать популярность товаров по типу события. Данные удобно просматривать в табличном виде. Можно выгрузить в формате csv и
-отобразить на Дашборде, например на платформе Apache Superset.
+отобразить на дашборде, например на платформе Apache Superset.
