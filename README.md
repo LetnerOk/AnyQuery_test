@@ -319,10 +319,10 @@ plt.ylabel('Количество запросов', fontsize=14) # ось орд
 ```sql
 SELECT
     searchTerm,
-    COUNT(searchTerm)
+    COUNT(searchTerm) AS count_search
 FROM Searches
-GROUP BY productId
-ORDER BY COUNT(productId) DESC
+GROUP BY searchTerm
+ORDER BY count_search DESC
 ```
 
 
